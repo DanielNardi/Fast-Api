@@ -2,35 +2,76 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import uuid
 import json
+import os
 
 app = Flask(__name__)
 CORS(app)  # Habilitar CORS para todas as rotas
 
-# Armazenamento em memória
-jogos_db = {
-    1: {
-        "id": 1,
-        "nome": "The Legend of Zelda",
-        "tipo": "Aventura",
-        "nota": 10,
-        "review": "Um clássico absoluto."
+# Arquivo de dados persistente
+DADOS_FILE = "dados_jogos.json"
+
+# Dados iniciais padrão
+DADOS_PADRAO = {
+    "jogos": {
+        "1": {
+            "id": 1,
+            "nome": "The Legend of Zelda",
+            "tipo": "Aventura",
+            "nota": 10,
+            "review": "Um clássico absoluto."
+        },
+        "2": {
+            "id": 2,
+            "nome": "FIFA 23",
+            "tipo": "Esporte",
+            "nota": 7,
+            "review": "Bom para jogar com amigos."
+        }
     },
-    2: {
-        "id": 2,
-        "nome": "FIFA 23",
-        "tipo": "Esporte",
-        "nota": 7,
-        "review": "Bom para jogar com amigos."
-    }
+    "proximo_id": 3
 }
 
-proximo_id = [3]  # Usar lista para modificação em função
+def carregar_dados():
+    """Carrega dados do arquivo JSON ou cria arquivo com dados padrão."""
+    if os.path.exists(DADOS_FILE):
+        try:
+            with open(DADOS_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError):
+            print(f"Erro ao ler {DADOS_FILE}, usando dados padrão")
+            salvar_dados(DADOS_PADRAO)
+            return DADOS_PADRAO
+    else:
+        # Criar arquivo com dados padrão
+        salvar_dados(DADOS_PADRAO)
+        return DADOS_PADRAO
+
+def salvar_dados(dados):
+    """Salva dados em arquivo JSON."""
+    try:
+        with open(DADOS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(dados, f, ensure_ascii=False, indent=2)
+    except IOError as e:
+        print(f"Erro ao salvar dados: {e}")
+
+# Carregar dados ao iniciar
+dados = carregar_dados()
+jogos_db = {int(k): v for k, v in dados["jogos"].items()}
+proximo_id = [dados["proximo_id"]]
 
 # Credenciais válidas
 CREDENCIAIS_VALIDAS = {
     "email": "usuario@esoft.com",
     "password": "Abc123"
 }
+
+def persistir_dados():
+    """Salva o estado atual da memória no arquivo JSON."""
+    dados_para_salvar = {
+        "jogos": {str(k): v for k, v in jogos_db.items()},
+        "proximo_id": proximo_id[0]
+    }
+    salvar_dados(dados_para_salvar)
 
 # ==================== ENDPOINTS ====================
 
@@ -96,6 +137,9 @@ def criar_jogo():
     jogos_db[proximo_id[0]] = novo_jogo
     proximo_id[0] += 1
     
+    # ✅ Salvar dados no arquivo
+    persistir_dados()
+    
     return jsonify(novo_jogo), 201
 
 @app.route("/jogos/<int:id>", methods=["PUT"])
@@ -120,6 +164,9 @@ def atualizar_jogo(id):
         "review": data.get("review")
     }
     
+    # ✅ Salvar dados no arquivo
+    persistir_dados()
+    
     return jsonify(jogos_db[id]), 200
 
 @app.route("/jogos/<int:id>", methods=["DELETE"])
@@ -132,6 +179,10 @@ def deletar_jogo(id):
         return jsonify({"detail": f"Jogo com id {id} não encontrado"}), 404
     
     del jogos_db[id]
+    
+    # ✅ Salvar dados no arquivo
+    persistir_dados()
+    
     return "", 204
 
 # ==================== TRATAMENTO DE ERROS ====================
@@ -147,4 +198,14 @@ def metodo_nao_permitido(error):
 # ==================== INICIALIZAÇÃO ====================
 
 if __name__ == "__main__":
+    print("=" * 50)
+    print("🚀 Iniciando API Biblioteca de Jogos")
+    print("=" * 50)
+    print(f"📁 Arquivo de dados: {DADOS_FILE}")
+    print(f"📊 Jogos carregados: {len(jogos_db)}")
+    print(f"🔄 Próximo ID disponível: {proximo_id[0]}")
+    print("=" * 50)
+    print("🌐 API disponível em: http://0.0.0.0:8000")
+    print("💾 Dados persistidos em: dados_jogos.json")
+    print("=" * 50)
     app.run(host="0.0.0.0", port=8000, debug=False)

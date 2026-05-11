@@ -173,36 +173,36 @@ Sem corpo de resposta.
 
 **Login:**
 ```bash
-curl -X POST "http://localhost:8000/login" \
+curl -X POST "https://fast-api-gnm7.onrender.com/login" \
   -H "Content-Type: application/json" \
   -d '{"email":"usuario@esoft.com","password":"Abc123"}'
 ```
 
 **Listar jogos:**
 ```bash
-curl -X GET "http://localhost:8000/jogos"
+curl -X GET "https://fast-api-gnm7.onrender.com/jogos"
 ```
 
 **Criar jogo:**
 ```bash
-curl -X POST "http://localhost:8000/jogos" \
+curl -X POST "https://fast-api-gnm7.onrender.com/jogos" \
   -H "Content-Type: application/json" \
   -d '{"nome":"Hollow Knight","tipo":"Plataforma","nota":8,"review":"Excelente jogo de plataforma"}'
 ```
 
 **Obter jogo:**
 ```bash
-curl -X GET "http://localhost:8000/jogos/1"
+curl -X GET "https://fast-api-gnm7.onrender.com/jogos/1"
 ```
 
 **Atualizar jogo:**
 ```bash
-curl -X PUT "http://localhost:8000/jogos/1" \
+curl -X PUT "https://fast-api-gnm7.onrender.com/jogos/1" \
   -H "Content-Type: application/json" \
   -d '{"nome":"The Legend of Zelda Remaster","tipo":"Aventura","nota":10,"review":"Ainda é um clássico"}'
 ```
 
 **Deletar jogo:**
 ```bash
-curl -X DELETE "http://localhost:8000/jogos/1"
+curl -X DELETE "https://fast-api-gnm7.onrender.com/jogos/1"
 ```
